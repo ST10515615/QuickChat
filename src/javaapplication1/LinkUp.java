@@ -1,12 +1,9 @@
 package javaapplication1;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
-/**
- * LinkUp is the main class of the QuickChat application.
- * Part 1: registers a user and logs them in.
- * Part 2: lets a logged-in user send, discard or store messages.
- */
+
 public class LinkUp {
 
     public static void main(String[] args) {
@@ -103,10 +100,15 @@ public class LinkUp {
         // only runs for a user who has logged in successfully
         Login.loginUser(inputDevice);
 
-        // ===================== PART 2: QUICKCHAT =====================
+        // ===================== QUICKCHAT =====================
+
+        // Record who is logged in and load messages stored in earlier runs
+        Message.setSender(userName);
+        int loadedCount = Message.loadStoredMessages();
 
         System.out.println();
         System.out.println("Welcome to QuickChat.");
+        System.out.println(loadedCount + " stored message(s) loaded from file.");
 
         // Ask how many messages the user wants to enter
         int numberOfMessages = 0;
@@ -133,6 +135,7 @@ public class LinkUp {
             System.out.println("1) Send Messages");
             System.out.println("2) Show recently sent messages");
             System.out.println("3) Quit");
+            System.out.println("4) Stored Messages");
             System.out.print("Choose an option: ");
 
             String option = inputDevice.nextLine().trim();
@@ -220,11 +223,94 @@ public class LinkUp {
                     System.out.println("Thank you for using QuickChat.");
                     break;
 
+                case "4":
+                    storedMessagesMenu(inputDevice);
+                    break;
+
                 default:
-                    System.out.println("Invalid option. Please enter 1, 2 or 3.");
+                    System.out.println("Invalid option. Please enter 1, 2, 3 or 4.");
             }
         }
 
         inputDevice.close();
+    }
+
+    // Menu for searching and managing the stored messages array
+    private static void storedMessagesMenu(Scanner inputDevice) {
+
+        boolean inStoredMenu = true;
+
+        while (inStoredMenu) {
+
+            System.out.println();
+            System.out.println("========== STORED MESSAGES ==========");
+            System.out.println("1) Display sender and recipient of all stored messages");
+            System.out.println("2) Display the longest stored message");
+            System.out.println("3) Search for a message ID");
+            System.out.println("4) Search for all messages for a recipient");
+            System.out.println("5) Delete a message using its hash");
+            System.out.println("6) Display a report of all stored messages");
+            System.out.println("7) Back to the main menu");
+            System.out.print("Choose an option: ");
+
+            String choice = inputDevice.nextLine().trim();
+
+            switch (choice) {
+
+                case "1":
+                    System.out.println(Message.displaySenderAndRecipient());
+                    break;
+
+                case "2":
+                    System.out.println("Longest stored message: " + Message.getLongestMessage());
+                    break;
+
+                case "3":
+                    System.out.print("Enter the message ID: ");
+                    String id = inputDevice.nextLine().trim();
+
+                    Message found = Message.searchByMessageID(id);
+
+                    if (found == null) {
+                        System.out.println("No message was found with that ID.");
+                    } else {
+                        System.out.println("Recipient: " + found.getRecipient());
+                        System.out.println("Message: " + found.getMessage());
+                    }
+                    break;
+
+                case "4":
+                    System.out.print("Enter the recipient cell number: ");
+                    String recipient = inputDevice.nextLine().trim();
+
+                    ArrayList<String> results = Message.searchByRecipient(recipient);
+
+                    if (results.isEmpty()) {
+                        System.out.println("No messages were found for that recipient.");
+                    } else {
+                        for (String text : results) {
+                            System.out.println("Message: " + text);
+                        }
+                    }
+                    break;
+
+                case "5":
+                    System.out.print("Enter the message hash: ");
+                    String hash = inputDevice.nextLine().trim().toUpperCase();
+                    System.out.println(Message.deleteByMessageHash(hash));
+                    break;
+
+                case "6":
+                    System.out.println(Message.getReport(Message.getStoredMessages()));
+                    break;
+
+                case "7":
+                    inStoredMenu = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid option. Please enter 1 to 7.");
+            }
+        }
     }
 }
